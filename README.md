@@ -66,7 +66,7 @@ rsync -av qpn-arduino/ ~/Arduino/
 
 ## Testing
 
-QM comes with a led blinking application. It is in
+Qpn comes with a led blinking application. It is in
 `Arduino/libraries/qpn_avr/examples/blinky/`. The default configuration
 utilises a tclsh build system, with lots of windows and mac dependencies. It
 appears simpler to replace with the Arduino-Makefile structure. There's a blinky
