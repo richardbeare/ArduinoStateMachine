@@ -1,0 +1,6 @@
+[submodule "qpn-arduino"]
+	path = qpn-arduino
+	url = https://github.com/QuantumLeaps/qpn-arduino
+[submodule "Arduino-Makefile"]
+	path = Arduino-Makefile
+	url = https://github.com/sudar/Arduino-Makefile
