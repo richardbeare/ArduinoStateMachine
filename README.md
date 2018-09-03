@@ -16,6 +16,11 @@ Arduino isn't an area of focus for QuantumLeaps, so there's a
 bit of effort required to produce a working development environment,
 especially under linux.
 
+When I first looked into this, back in 2014, there was more Arduino
+support. Now the only framework from QuantumLeaps with Arduino tools
+appears to be the "Nano" framework. Not yet sure how this differs from
+what I used before, but does mean I need to start again.
+
 This repository contains my recipes.
 
 ## Platform
@@ -98,3 +103,11 @@ Click the build and upload icons and confirm that everything is working.
 The environment variables at the top of the management dialog don't
 appear useful anymore. This sort of thing is now handled by the
 makefile.
+
+
+## Other notes
+
+The _bsp_ files (board support package?) are important if you want to
+do things like drive stepper motors at decent speeds, and for
+including code to debounce switches.
+
