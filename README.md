@@ -104,6 +104,13 @@ The environment variables at the top of the management dialog don't
 appear useful anymore. This sort of thing is now handled by the
 makefile.
 
+## Documentation links
+
+[QP-Nano](http://www.state-machine.com/qpn/)
+
+[Getting started with QP-Nano](https://www.state-machine.com/doc/AN_Getting_Started_with_QP-nano.pdf)
+
+[Crash course in UML state machines](https://state-machine.com/doc/AN_Crash_Course_in_UML_State_Machines.pdf)
 
 ## Other notes
 
