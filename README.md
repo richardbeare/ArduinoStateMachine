@@ -94,7 +94,7 @@ Open the blinky project (navigate to `~/Arduino/libraries/qpn_avr/examples/blink
 
 Select Tools->Manage External Tools
 
-For each of the "build", "clean" and "upload" options, use "make" in
+For each of the "build", "clean"  and "upload" options, use "make" in
 the command field and "all", "clean" and "upload" in the argument
 field.
 
@@ -103,6 +103,13 @@ Click the build and upload icons and confirm that everything is working.
 The environment variables at the top of the management dialog don't
 appear useful anymore. This sort of thing is now handled by the
 makefile.
+
+Use "make monitor" to see the serial output.
+
+### QM foibles
+
+QM seems to save state in a .projectname file. This includes the external tool and
+environment variable configuration.
 
 ## Documentation links
 
@@ -117,4 +124,22 @@ makefile.
 The _bsp_ files (board support package?) are important if you want to
 do things like drive stepper motors at decent speeds, and for
 including code to debounce switches.
+
+# Linux versions
+
+Is it possible to test designs with the posix tools? Seems there is a posix port, so lets give it
+a go.
+
+[qpn, not for arduino](https://github.com/QuantumLeaps/qpn/releases)
+
+unzip it. There are examples for each backend. Linux stuff in `qpn/examples/posix-qv/`.
+
+_Pelican_ doesn't compile, _blinky_ and _dpp_ do.
+
+Figure out a qm version?
+
+This seems to work. Copy the arduino qm blinky project and replace the various .c, .h files with ones
+from the blinky posix project. Don't replace blinky.c or blinky.h - they come from the qm interface.
+
+Very likely to be a good option for testing designs.
 
