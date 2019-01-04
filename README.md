@@ -119,6 +119,50 @@ environment variable configuration.
 
 [Crash course in UML state machines](https://state-machine.com/doc/AN_Crash_Course_in_UML_State_Machines.pdf)
 
+## Timer frequency
+
+There's some board configuration stuff burried in `QF_onStartup`. In the blinky example these settings are as follows:
+
+```c
+void QF_onStartup(void) {
+    // set Timer2 in CTC mode, 1/1024 prescaler, start the timer ticking...
+    TCCR2A = (1U << WGM21) | (0U << WGM20);
+    TCCR2B = (1U << CS22 ) | (1U << CS21) | (1U << CS20); // 1/2^10
+    ASSR  &= ~(1U << AS2);
+    TIMSK2 = (1U << OCIE2A); // enable TIMER2 compare Interrupt
+    TCNT2  = 0U;
+
+    // set the output-compare register based on the desired tick frequency
+    OCR2A  = (F_CPU / BSP_TICKS_PER_SEC / 1024U) - 1U;
+}
+```
+
+Explanations [https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328]. 
+[http://maxembedded.com/2011/07/avr-timers-ctc-mode/]
+
+This lines sets CTC mode - "clear timer on compare". The same registers are also used in pulse width modulation 
+applications.
+```c
+    TCCR2A = (1U << WGM21) | (0U << WGM20);
+```
+
+These lines set the clock frequency division. High divisions for low power applications, like blinky
+```c
+TCCR2B = (1U << CS22 ) | (1U << CS21) | (1U << CS20); // 1/2^10
+TCCR2B = (1U << CS22 ) | (1U << CS21) | (0U << CS20); // 1/256
+TCCR2B = (1U << CS22 ) | (0U << CS21) | (1U << CS20); // 1/128
+TCCR2B = (1U << CS22 ) | (0U << CS21) | (0U << CS20); // 1/64
+TCCR2B = (0U << CS22 ) | (1U << CS21) | (1U << CS20); // 1/32
+TCCR2B = (0U << CS22 ) | (1U << CS21) | (0U << CS20); // 1/8
+TCCR2B = (0U << CS22 ) | (0U << CS21) | (1U << CS20); // no prescaling
+
+```
+
+Finally, the output compare register (OCR) is set.
+```c
+    OCR2A  = (F_CPU / BSP_TICKS_PER_SEC / 1024U) - 1U;
+```
+
 ## Other notes
 
 The _bsp_ files (board support package?) are important if you want to
