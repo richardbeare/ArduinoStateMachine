@@ -1,0 +1,453 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model version="4.3.0" links="0">
+ <documentation>Testing the optical stops, LEDs and button switches on my screw positioning system</documentation>
+ <framework name="qpn"/>
+ <package name="AOs" stereotype="0x02">
+  <class name="Indicator" superclass="qpn::QActive">
+   <documentation>An indicator module using 2 LEDs. Different states get indicated by flash
+combinations - both on, red on, green on, both off, green on + red flash fast,
+green on + red flash slow, red on + green flash fast, red on + green flash slow,
+both flash in sync, both flash out of sync</documentation>
+   <statechart>
+    <initial target="../4">
+     <initial_glyph conn="2,2,5,0,16,2">
+      <action box="0,-2,10,2"/>
+     </initial_glyph>
+    </initial>
+    <state name="RedOnGreenOff">
+     <entry>    // Turn on the LEDs
+    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_RED, HIGH);
+</entry>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="14,44,3,1,26,-30,-4">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="14,38,22,12">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="RedOnGreenOn">
+     <entry>    // Turn on the LEDs
+    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_RED, HIGH);
+</entry>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="14,61,3,1,28,-49,-6">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="14,52,22,12">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="RedOffGreenOn">
+     <entry>    // Turn on the LEDs
+    digitalWrite(LED_GREEN, HIGH);
+    digitalWrite(LED_RED, LOW);
+
+</entry>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="14,30,3,1,24,-14,-2">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="14,24,22,12">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="RedOffGreenOff">
+     <entry>    digitalWrite(LED_GREEN, LOW);
+    digitalWrite(LED_RED, LOW);
+</entry>
+     <tran trig="GO_TO_A" target="../../3">
+      <tran_glyph conn="14,16,3,3,-2,16,2">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_B" target="../../1">
+      <tran_glyph conn="14,14,3,3,-4,32,4">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_C" target="../../2">
+      <tran_glyph conn="14,12,3,3,-6,46,6">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_D" target="../../5">
+      <tran_glyph conn="14,10,3,3,-10,58,10">
+       <action box="0,-2,10,3"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_E" target="../../6">
+      <tran_glyph conn="14,18,3,3,42,51,1">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_F" target="../../7">
+      <tran_glyph conn="14,19,3,3,70,50,2">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="GO_TO_G" target="../../8">
+      <tran_glyph conn="14,20,3,3,64,19,8">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="14,4,22,18">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="RedOffGreenFlash">
+     <entry>digitalWrite(LED_RED, LOW);
+QActive_armX((QActive *)me, 0U,
+                 BSP_TICKS_PER_SEC/2U, BSP_TICKS_PER_SEC/2U);
+
+</entry>
+     <initial target="../2">
+      <initial_glyph conn="28,69,5,1,2,8,-2">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="14,71,3,1,31,-61,-9">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="onA">
+      <entry>digitalWrite(LED_GREEN, HIGH);</entry>
+      <tran trig="Q_TIMEOUT" target="../../3">
+       <tran_glyph conn="16,77,3,1,-1,4,18,5,-5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="16,73,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="offA">
+      <entry>digitalWrite(LED_GREEN, LOW);</entry>
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <tran_glyph conn="16,87,3,1,19,-11,-7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="16,83,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="14,65,23,29">
+      <entry box="1,2,5,2"/>
+     </state_glyph>
+    </state>
+    <state name="GreenOffRedFlash">
+     <entry>digitalWrite(LED_GREEN, LOW);
+QActive_armX((QActive *)me, 0U,
+                 BSP_TICKS_PER_SEC/2U, BSP_TICKS_PER_SEC/2U);
+
+</entry>
+     <initial target="../3">
+      <initial_glyph conn="71,69,5,1,2,8,-2">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="57,71,3,1,-3,-63,-18">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="offB">
+      <entry>digitalWrite(LED_RED, LOW);</entry>
+      <tran trig="Q_TIMEOUT" target="../../3">
+       <tran_glyph conn="59,87,3,1,19,-11,-7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="59,83,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state name="onB">
+      <entry>digitalWrite(LED_RED, HIGH);</entry>
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <tran_glyph conn="59,77,3,1,-1,4,18,5,-5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="59,73,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="57,65,23,29">
+      <entry box="1,2,5,2"/>
+     </state_glyph>
+    </state>
+    <state name="GreenRedFlashSync">
+     <entry>QActive_armX((QActive *)me, 0U,
+                 BSP_TICKS_PER_SEC/2U, BSP_TICKS_PER_SEC/2U);
+
+</entry>
+     <initial target="../3">
+      <initial_glyph conn="100,69,5,1,2,8,-2">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="86,71,3,1,-5,-54,-45">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="offC">
+      <entry>digitalWrite(LED_RED, LOW);
+digitalWrite(LED_GREEN, LOW);</entry>
+      <tran trig="Q_TIMEOUT" target="../../3">
+       <tran_glyph conn="88,87,3,1,19,-11,-7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="88,83,12,6">
+       <entry box="1,2,7,1"/>
+      </state_glyph>
+     </state>
+     <state name="onC">
+      <entry>digitalWrite(LED_RED, HIGH);
+digitalWrite(LED_GREEN, HIGH);</entry>
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <tran_glyph conn="88,77,3,1,-1,4,18,5,-5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="88,73,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="86,65,23,29">
+      <entry box="1,2,5,2"/>
+     </state_glyph>
+    </state>
+    <state name="GreenRedFlashOutofSync">
+     <entry>QActive_armX((QActive *)me, 0U,
+                 BSP_TICKS_PER_SEC/2U, BSP_TICKS_PER_SEC/2U);
+
+</entry>
+     <initial target="../3">
+      <initial_glyph conn="100,35,5,1,2,10,-2">
+       <action box="0,-2,10,2"/>
+      </initial_glyph>
+     </initial>
+     <tran trig="CHANGE_INDICATOR" target="../../4">
+      <tran_glyph conn="86,37,3,1,-3,-30,-47">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="offD">
+      <entry>digitalWrite(LED_RED, LOW);
+digitalWrite(LED_GREEN, HIGH);</entry>
+      <tran trig="Q_TIMEOUT" target="../../3">
+       <tran_glyph conn="88,55,3,1,19,-11,-7">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="88,51,12,6">
+       <entry box="1,2,7,1"/>
+      </state_glyph>
+     </state>
+     <state name="onD">
+      <entry>digitalWrite(LED_RED, HIGH);
+digitalWrite(LED_GREEN, LOW);</entry>
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <tran_glyph conn="88,45,3,1,-1,4,18,5,-5">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="88,41,12,6">
+       <entry box="1,2,6,2"/>
+      </state_glyph>
+     </state>
+     <state_glyph node="86,31,23,29">
+      <entry box="1,2,5,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="137,97"/>
+   </statechart>
+  </class>
+ </package>
+ <directory name=".">
+  <file name="indicator.ino">
+   <text>#include &quot;qpn.h&quot;     // QP-nano framework
+#include &quot;Arduino.h&quot; // Arduino API
+
+//============================================================================
+// declare all AO classes...
+$declare(AOs::Indicator)
+//...
+
+#define SERIALDEBUG
+
+// AO instances and event queue buffers for them...
+Indicator AO_Indicator;
+static QEvt l_indicatorQSto[20]; // Event queue storage for Blinky
+//...
+
+//============================================================================
+// QF_active[] array defines all active object control blocks ----------------
+QActiveCB const Q_ROM QF_active[] = {
+    { (QActive *)0,           (QEvt *)0,        0U                  },
+    { (QActive *)&amp;AO_Indicator,  l_indicatorQSto,     Q_DIM(l_indicatorQSto) }
+};
+
+//============================================================================
+
+// various constants for the application...
+enum {
+    BSP_TICKS_PER_SEC = 10000, // number of system clock ticks in one second
+    TicksPerISR = 100, // The switches get checked BSP_TICKS_PER_SEC/TicksPerISR
+    LED_RED = 13,
+    LED_GREEN = 12,
+    OPTICAL_A = 2, /* blue wire */
+    OPTICAL_B = 3, /* blue and white wire */
+    BUTTON_A = 4, /* orange and white wire */
+    BUTTON_B = 5  /*  brown wire */
+};
+
+enum InputSignals {
+CHANGE_INDICATOR_SIG=Q_USER_SIG, 
+GO_TO_A_SIG, 
+GO_TO_B_SIG, 
+GO_TO_C_SIG,
+GO_TO_D_SIG,
+GO_TO_E_SIG,
+GO_TO_F_SIG,
+GO_TO_G_SIG
+};
+void BSP_Debug(const char * msg)
+{
+#ifdef SERIALDEBUG
+    Serial.println(msg);
+#endif
+}
+
+//............................................................................
+void setup() {
+    // initialize the QF-nano framework
+    QF_init(Q_DIM(QF_active));
+
+    // initialize all AOs...
+    QActive_ctor(&amp;AO_Indicator.super, Q_STATE_CAST(&amp;Indicator_initial));
+
+    // initialize the hardware used in this sketch...
+    pinMode(LED_RED, OUTPUT); // set the LED-L pin to output
+    pinMode(LED_GREEN, OUTPUT);
+
+
+#ifdef SERIALDEBUG
+    Serial.begin(115200);   // set the highest stanard baud rate of 115200 bps
+    Serial.print(F(&quot;Start, QP-nano: &quot;));
+    Serial.print(F(QP_VERSION_STR));
+    Serial.println(&quot;&quot;);
+    Serial.print(&quot;CPU Clock frequency &quot;);
+    Serial.println(F_CPU);
+#endif
+}
+
+//............................................................................
+void loop() {
+    QF_run(); // run the QF-nano framework
+}
+
+//============================================================================
+// interrupts...
+ISR(TIMER2_COMPA_vect) {
+    QF_tickXISR(0); // process time events for tick rate 0
+
+    if (Serial.available() &gt; 0) {
+        switch (Serial.read()) { // read the incoming byte
+            case 'A':
+            case 'a':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_A_SIG, 0U);
+                break;
+            case 'B':
+            case 'b':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_B_SIG, 0U);
+                break;
+            case 'C':
+            case 'c':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_C_SIG, 0U);
+                break;
+            case 'D':
+            case 'd':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_D_SIG, 0U);
+                break;
+            case 'E':
+            case 'e':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_E_SIG, 0U);
+                break;
+            case 'F':
+            case 'f':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_F_SIG, 0U);
+                break;
+            case 'G':
+            case 'g':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_G_SIG, 0U);
+                break;
+           case 'Q':
+            case 'q':
+                QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, CHANGE_INDICATOR_SIG, 0U);
+                break;
+        }
+    }
+
+
+}
+
+//============================================================================
+// QF callbacks...
+void QF_onStartup(void) {
+    // set Timer2 in CTC mode, 1/1024 prescaler, start the timer ticking...
+    TCCR2A = (1U &lt;&lt; WGM21) | (0U &lt;&lt; WGM20);
+//    TCCR2B = (1U &lt;&lt; CS22 ) | (1U &lt;&lt; CS21) | (1U &lt;&lt; CS20); // 1/2^10
+//    TCCR2B = (1U &lt;&lt; CS22 ) | (1U &lt;&lt; CS21) | (0U &lt;&lt; CS20); // 1/256
+//    TCCR2B = (1U &lt;&lt; CS22 ) | (0U &lt;&lt; CS21) | (1U &lt;&lt; CS20); // 1/128
+    TCCR2B = (1U &lt;&lt; CS22 ) | (0U &lt;&lt; CS21) | (0U &lt;&lt; CS20); // 1/64
+
+    ASSR  &amp;= ~(1U &lt;&lt; AS2);
+    TIMSK2 = (1U &lt;&lt; OCIE2A); // enable TIMER2 compare Interrupt
+    TCNT2  = 0U;
+
+    // set the output-compare register based on the desired tick frequency
+    //    OCR2A  = (F_CPU / 1024U / BSP_TICKS_PER_SEC) - 1U;
+    OCR2A  = (F_CPU  / 64 / BSP_TICKS_PER_SEC ) - 1U;
+
+}
+//............................................................................
+void QV_onIdle(void) {   // called with interrupts DISABLED
+    // Put the CPU and peripherals to the low-power mode. You might
+    // need to customize the clock management for your application,
+    // see the datasheet for your particular AVR MCU.
+    SMCR = (0 &lt;&lt; SM0) | (1 &lt;&lt; SE); // idle mode, adjust to your project
+    QV_CPU_SLEEP();  // atomically go to sleep and enable interrupts
+}
+//............................................................................
+void Q_onAssert(char const Q_ROM * const file, int line) {
+    // implement the error-handling policy for your application!!!
+    QF_INT_DISABLE(); // disable all interrupts
+    QF_RESET();  // reset the CPU
+}
+
+//============================================================================
+// define all AO classes (state machine)...
+$define(AOs::Indicator)
+//...
+</text>
+  </file>
+ </directory>
+</model>
