@@ -140,13 +140,14 @@ void QF_onStartup(void) {
 Explanations [https://sites.google.com/site/qeewiki/books/avr-guide/pwm-on-the-atmega328]. 
 [http://maxembedded.com/2011/07/avr-timers-ctc-mode/]
 
-This lines sets CTC mode - "clear timer on compare". The same registers are also used in pulse width modulation 
-applications.
+This lines sets CTC mode - "clear timer on compare". The same registers are also 
+used in pulse width modulation applications.
 ```c
     TCCR2A = (1U << WGM21) | (0U << WGM20);
 ```
 
-These lines set the clock frequency division. High divisions for low power applications, like blinky
+These lines set the clock frequency division. High divisions for low power applications, 
+like blinky
 ```c
 TCCR2B = (1U << CS22 ) | (1U << CS21) | (1U << CS20); // 1/2^10
 TCCR2B = (1U << CS22 ) | (1U << CS21) | (0U << CS20); // 1/256
@@ -160,7 +161,128 @@ TCCR2B = (0U << CS22 ) | (0U << CS21) | (1U << CS20); // no prescaling
 
 Finally, the output compare register (OCR) is set.
 ```c
-    OCR2A  = (F_CPU / BSP_TICKS_PER_SEC / 1024U) - 1U;
+    OCR2A  = (F_CPU / 1024U / BSP_TICKS_PER_SEC) - 1U;
+```
+
+A timer will fire when the number of ticks (after frequency division) reaches the OCR value.
+
+The `F_CPU/1024U` component of the equation is the number of ticks in one second, if using the 
+setting for scaling by 1024. 
+
+The combination of divisor and `BSP\_TICKS\_PER\_SEC` needs to be
+selected so that the value for OCR2A is between 0 and 255.
+
+There appear to be 4 timers available in qpn. They are defined in _qpn.h_ as `Q\_TIMEOUT\_SIG`, `Q\_TIMEOUT1\_SIG`, etc. They are activated with calls like:
+
+
+Seems that the OCR2A register is 8 bit
+```c
+QActive_armX((QActive *)me, /* object pointer */
+             0U,            /* which timeout - Q_TIMEOUT_SIG, Q_TIMEOUT1_SIG etc */
+             BSP_TICKS_PER_SEC/2U, /* number of ticks for rearming - seems to be for the first firing only.  */
+             BSP_TICKS_PER_SEC/100U); /* interval between ticks */
+
+```
+
+## Input debouncing
+
+Switch bounce needs to be dealt with before hitting the state
+machines. There's various discussion of this around, but I can't find
+the original source I used. Here's the code I use for 4 inputs - 2
+optical and 2 manual switches. The idea is to use the interrupt
+service routine (ISR) to do the debouncing. The ISR is called every
+time the system clock (set up above) ticks. Events are transmitted
+back to QF objects using `QACTIVE\_POST\_ISR`. The code below is set
+up to test inputs every `TicksPerISR` clock ticks. The idea is that
+high speed driving of a stepper motor is controlled by the master clock, but the
+switches are slower, so we don't need to check them as often.
+
+The port numbers are defined in an enum. The connections of interest
+are defined in the `B00111100` pattern - in this case pins 2,3,4,5. We
+ignore pins 0 and 1 because they are used for serial IO on Arduino.
+
+```c
+ISR(TIMER2_COMPA_vect) {
+    QF_tickXISR(0); // process time events for tick rate 0
+
+    // No need to clear the interrupt source since the Timer2 compare
+    // interrupt is automatically cleard in hardware when the ISR runs.
+
+    // optical home needs to fire on a low->high transition
+    // advance could be on either transition.
+    // both need to be on transition, otherwise we flood the event queues
+    // Might be best to have another, slower ISR for buttons, or only check them every 10th
+    // entry to this loop
+
+    static uint8_t interruptCounter = 0;
+    // need to sort this out - probably want to arrange for firing on button release
+    static uint8_t nOld=0;   /* previous-previous switch bitmask */
+    static uint8_t nPrev=0;  /* previous  switch bitmask */
+    static uint8_t nOutput=0; /* debounced switch bitmaks */
+    static uint8_t pOutput=0;
+    ++interruptCounter;
+    if (interruptCounter == TicksPerISR) {
+       // only check the switches every 10 clock ticks
+       interruptCounter = 0;F_CPU 
+       // do the low frequency stuff, like button checks
+
+       // read AND debounce all the switches
+       /* read the current state of the switches, ignoring
+        the serial port pins. all the inputs need to be on
+        PORTD (pins 0 to 7) */
+        // B00111100 needs to match the input pins defined at the top. i.e we
+        // want 2,3,4,5. Leave 0 and 1 alone - they are for serial IO.
+        uint8_t nCurrent = PIND & B00111100;
+        nOutput = (nOutput & (nOld | nPrev | nCurrent)) |
+                             (nOld & nPrev & nCurrent);
+        nOld = nPrev;
+        nPrev = nCurrent;
+
+
+        // compare  nOutput and pOutput to get a transition
+        // low to high transitions only
+        uint8_t LowtoHigh = nOutput & (~pOutput);
+        /* the following relies on the input ports being PIN numbers 0-7 */
+        uint8_t opticalA = LowtoHigh & (1 << OPTICAL_A);
+        uint8_t opticalB = LowtoHigh & (1 << OPTICAL_B);
+        uint8_t buttonA = LowtoHigh & (1 << BUTTON_A);
+        uint8_t buttonB = LowtoHigh & (1 << BUTTON_B);
+        pOutput=nOutput;
+
+        if (opticalA) {
+           BSP_Debug("Optical A");
+           QACTIVE_POST_ISR((QMActive *)&AO_Stepper, OPTICAL_A_SIG, 0U);
+        }
+        if (opticalB) {
+           BSP_Debug("Optical B");
+           QACTIVE_POST_ISR((QMActive *)&AO_Stepper, OPTICALSTOP_A_SIG, 0U);
+        }
+
+        if (buttonA) {
+            BSP_Debug("Button A");
+            QACTIVE_POST_ISR((QMActive *)&AO_Stepper, BUTTONPRESS_A_SIG, 0U);
+        }
+
+        if (buttonB) {
+            BSP_Debug("Button B");
+            QACTIVE_POST_ISR((QMActive *)&AO_Stepper, BUTTONPRESS_B_SIG, 0U);
+        }
+
+   }
+
+}
+
+```
+
+Care needs to be taken when defining the signals sent by the post function:
+```c
+enum InputSignals {
+OPTICALSTOP_A_SIG=Q_USER_SIG, // Vital that the value for the first signal is set correctly.
+OPTICALSTOP_B_SIG, 
+BUTTONPRESS_A_SIG, 
+BUTTONPRESS_B_SIG
+};
+
 ```
 
 ## Other notes
