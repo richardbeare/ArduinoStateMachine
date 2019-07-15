@@ -77,27 +77,59 @@ def mkSlotsB(count, boardwidth):
     return(res)
 
 
-def dumpPattern(pat, filename, kerfwidth):
+def dumpPattern(pat, filename, kerfwidth, extracuts=False):
     invpat = mkPatInv(pat)
     # prune the pin pattern
+
     pat['leftpat']=pat['leftpat'][1:]
     pat['rightpat']=pat['rightpat'][:-1]
+    #invpat['leftpat'] = invpat['leftpat'][:-1]
+    #invpat['rightpat'] = invpat['rightpat'][1:]
     print("Slot width = ", pat['leftpat'][0] - pat['rightpat'][0])
-    #print(pat)
-    #print(invpat)
+
     invpat=adjustRight(invpat, kerfwidth)
     pat=adjustRight(pat, kerfwidth)
+
+    print("pat=", pat)
+    print("invpat=", invpat)
 
     rightposlen=len(pat['rightpat'])
     leftposlen = len(pat['leftpat'])
 
     # combine left and right into one array
     #
-    cutpos=np.concatenate((pat['rightpat'], pat['leftpat']))
-    cutpos.sort()
+    if extracuts:
+        # include cuts to isolate the pins
+        def InsertCuts(right, left):
+            result=list()
+            k=len(right)
+            for i in range(k):
+                first=right[i]
+                last=left[i]
+                newcuts=np.linspace(first, last, num=2+np.round((last-first)/(kerfwidth)))
+                result.append(newcuts)
+            #result.sort()
+            result=np.concatenate(result)
+            result.sort()
+            return(result)
+        cutpos=InsertCuts(pat['rightpat'], pat['leftpat'])
+        cutpos2=InsertCuts(invpat['rightpat'], invpat['leftpat'])
+
+    else:
+        cutpos=np.concatenate((pat['rightpat'], pat['leftpat']))
+        cutpos.sort()
+        cutpos2=np.concatenate((invpat['rightpat'], invpat['leftpat']))
+        cutpos2.sort()
+
     print(cutpos)
     cutpos = np.round(stepscale*cutpos)
     cutpos = cutpos.astype(int)
+
+    print(cutpos)
+    cutpos2 = np.round(stepscale*cutpos2)
+    cutpos2 = cutpos2.astype(int)
+    print(cutpos2)
+
     f = open(filename, 'w')
     f.write("#ifndef _slots_h\n")
     f.write("#define _slots_h\n")
@@ -105,7 +137,7 @@ def dumpPattern(pat, filename, kerfwidth):
 
     def writeArray(arr, name, lenname):
         arrlen=len(arr)
-        f.write("const int " + lenname + " = " + str(arrlen) + ";\n")
+        f.write("const uint16_t " + lenname + " = " + str(arrlen) + ";\n")
         f.write("const uint32_t " + name + "[" + lenname + "]={")
         for i in range(arrlen):
             if i != 0:
@@ -122,21 +154,18 @@ def dumpPattern(pat, filename, kerfwidth):
     #f.write("const float *currentLeftCuts;\n")
     #f.write("int currentRightLen;\n")
     #f.write("int currentLeftLen;\n")
-    writeArray(cutpos, "cutsteparray", "TotalCuts")
+    writeArray(cutpos, "cutsteparray1", "TotalCuts1")
+
+    
+    writeArray(cutpos2, "cutsteparray2", "TotalCuts2")
+    f.write("const uint32_t* cutsteparray = cutsteparray1;\n")
+    f.write("uint16_t TotalCuts = TotalCuts1;\n")
+
     f.write("#endif\n")
     f.close()
-    ## write out the declarations
-    # f = open(filenamedec, 'w')
-    # f.write("#ifndef _slotsdec_h\n")
-    # f.write("#define _slotsdec_h\n")
-    # f.write("extern const float kerfwidth;\n")
-    # f.write("extern const int leftposlen, rightposlen, invleftposlen, invrightposlen;\n")
-    # f.write("extern int currentLeftLen, currentRightLen;\n")
-    # f.write("extern const float leftpos[], rightpos[], invleftpos[], invrightpos[];\n")
-    # f.write("extern const float *currentRightCuts;\n")
-    # f.write("extern const float *currentLeftCuts;\n")
-    # f.write("#endif\n")
-    # f.close()
+
+
+
 ############################################
 ## code to generate the patterns here
 ## test version : 5 pins, 100mm board
@@ -144,5 +173,5 @@ def dumpPattern(pat, filename, kerfwidth):
 p1=mkSlotsB(5, 100)
 
 # Estimate kerf for the "allpurpose blade"
-dumpPattern(p1, "targetsteps.h", 2.7)
+dumpPattern(p1, "targetsteps.h", 2.75, extracuts=True)
 

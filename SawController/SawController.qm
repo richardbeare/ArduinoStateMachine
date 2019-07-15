@@ -437,12 +437,24 @@ stopStepperSpeedTimer(&amp;me-&gt;super);
     </state>
     <state name="AtHome">
      <documentation>Flashes both lights in sync.
-Sits and waits for a button press to start the cut sequence.</documentation>
+Sits and waits for a button press to start the cut sequence.
+Button A selects the pattern with pins at the ends. Button B selects the inverse.</documentation>
      <entry>RedFlashGreenFlashSync();
 </entry>
      <exit>LightsOff();</exit>
-     <tran trig="DUALPRESS" target="../../4">
+     <tran trig="SINGLEPRESS_A" target="../../4">
+      <action>TotalCuts=TotalCuts1;
+cutsteparray=cutsteparray1;
+</action>
       <tran_glyph conn="102,19,3,1,2,20,-6">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="SINGLEPRESS_B" target="../../4">
+      <action>TotalCuts=TotalCuts2;
+cutsteparray=cutsteparray2;
+</action>
+      <tran_glyph conn="124,18,1,1,4,21,-15,3,-15">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>

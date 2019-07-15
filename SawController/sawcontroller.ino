@@ -1117,8 +1117,19 @@ static QState Stage_AtHome(Stage * const me) {
             status_ = Q_HANDLED();
             break;
         }
-        /*${AOs::Stage::SM::AtHome::DUALPRESS} */
-        case DUALPRESS_SIG: {
+        /*${AOs::Stage::SM::AtHome::SINGLEPRESS_A} */
+        case SINGLEPRESS_A_SIG: {
+            TotalCuts=TotalCuts1;
+            cutsteparray=cutsteparray1;
+
+            status_ = Q_TRAN(&Stage_CutSequence);
+            break;
+        }
+        /*${AOs::Stage::SM::AtHome::SINGLEPRESS_B} */
+        case SINGLEPRESS_B_SIG: {
+            TotalCuts=TotalCuts2;
+            cutsteparray=cutsteparray2;
+
             status_ = Q_TRAN(&Stage_CutSequence);
             break;
         }
