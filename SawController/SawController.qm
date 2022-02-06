@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model version="4.3.0" links="0">
+<model version="4.5.1" links="0">
  <documentation>Simple model template for QP-nano</documentation>
  <framework name="qpn"/>
  <package name="AOs" stereotype="0x02">
@@ -8,7 +8,7 @@
 combinations - both on, red on, green on, both off, green on + red flash fast,
 green on + red flash slow, red on + green flash fast, red on + green flash slow,
 both flash in sync, both flash out of sync</documentation>
-   <statechart>
+   <statechart properties="0x01">
     <initial target="../4">
      <initial_glyph conn="2,2,5,0,16,2">
       <action box="0,-2,10,2"/>
@@ -285,20 +285,20 @@ digitalWrite(LED_GREEN, LOW);</entry>
   </class>
   <class name="Buttons" superclass="qpn::QActive">
    <documentation>An Button module using 2 buttons. Different signals for simultaneous presses or double taps.</documentation>
-   <statechart>
+   <statechart properties="0x01">
     <initial target="../1">
-     <initial_glyph conn="13,22,5,3,13">
+     <initial_glyph conn="13,22,5,3,12">
       <action box="0,-2,10,2"/>
      </initial_glyph>
     </initial>
     <state name="wait">
      <tran trig="BUTTONPRESS_A" target="../2">
-      <tran_glyph conn="26,36,3,3,17">
+      <tran_glyph conn="25,36,3,3,17">
        <action box="1,-3,10,2"/>
       </tran_glyph>
      </tran>
      <tran trig="BUTTONPRESS_B" target="../3">
-      <tran_glyph conn="113,34,1,1,-13">
+      <tran_glyph conn="112,34,1,1,-13">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -308,25 +308,25 @@ digitalWrite(LED_GREEN, LOW);</entry>
       <tran trig="Q_TIMEOUT" target="../..">
        <action>// send single press
 ButtonASingle();</action>
-       <tran_glyph conn="43,53,3,3,-19,-1,2">
+       <tran_glyph conn="42,53,3,3,-19,-1,2">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="BUTTONPRESS_A" target="../..">
        <action>// send double press
 ButtonADouble();</action>
-       <tran_glyph conn="43,49,3,3,-19,-1,2">
+       <tran_glyph conn="42,49,3,3,-19,-1,2">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="BUTTONPRESS_B" target="../..">
        <action>// send dual press
 ButtonAB();</action>
-       <tran_glyph conn="43,57,3,3,-19,-1,2">
+       <tran_glyph conn="42,57,3,3,-19,-1,2">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="43,30,23,34">
+      <state_glyph node="42,30,23,34">
        <entry box="1,2,6,2"/>
        <exit box="1,4,6,2"/>
       </state_glyph>
@@ -338,30 +338,30 @@ ButtonAB();</action>
        <action>// send single press B
 ButtonBSingle();
 </action>
-       <tran_glyph conn="77,38,3,1,36">
+       <tran_glyph conn="76,38,3,1,36">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="BUTTONPRESS_B" target="../..">
        <action>// send double press B
 ButtonBDouble();</action>
-       <tran_glyph conn="77,42,3,1,36">
+       <tran_glyph conn="76,42,3,1,36">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
       <tran trig="BUTTONPRESS_A" target="../..">
        <action>// send dual press
 ButtonAB();</action>
-       <tran_glyph conn="77,46,3,1,36">
+       <tran_glyph conn="76,46,3,1,36">
         <action box="0,-2,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="77,29,23,34">
+      <state_glyph node="76,29,23,34">
        <entry box="1,2,6,2"/>
        <exit box="1,4,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="26,16,87,72"/>
+     <state_glyph node="25,16,87,72"/>
     </state>
     <state_diagram size="146,104"/>
    </statechart>
@@ -372,7 +372,7 @@ ButtonAB();</action>
    <attribute name="CurrentCut" type="uint16_t" visibility="0x02" properties="0x00">
     <documentation>index into the cut array</documentation>
    </attribute>
-   <statechart>
+   <statechart properties="0x01">
     <initial target="../1">
      <initial_glyph conn="7,3,5,3,-5,7,1">
       <action box="0,-2,10,2"/>
@@ -381,10 +381,14 @@ ButtonAB();</action>
     <state name="ReadyWaiting">
      <entry>// set the indicator to both lights on
 RedOnGreenOn();
-// wait for button press</entry>
+// wait for button press
+deactivateStepper();
+// for testing only - when stuff doesn't work
+// setDirectionHome();
+// digitalWrite(TBCLK_P, HIGH);</entry>
      <exit>LightsOff();</exit>
      <tran trig="SINGLEPRESS_A">
-      <choice target="../../../7/1">
+      <choice target="../../../6/1">
        <guard brief="Already home">digitalRead(OPTICAL_A)</guard>
        <choice_glyph conn="16,25,5,3,22,-7,4">
         <action box="1,0,10,2"/>
@@ -410,55 +414,36 @@ RedOnGreenOn();
 // Stepper speed and direction set on entry</documentation>
      <entry>setDirectionHome();
 activateStepper();
-setStepperSeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/100U);
-</entry>
+setStepperSpeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/MotorStepDivider);
+RedOffGreenFlash();</entry>
      <exit>me-&gt;CurrentStep = 0;
 deactivateStepper();
 stopStepperSpeedTimer(&amp;me-&gt;super);
-</exit>
-     <tran trig="OPTICALSTOP_A" target="../../3">
-      <tran_glyph conn="63,17,3,3,39">
+LightsOff();</exit>
+     <tran trig="OPTICALSTOP_A" target="../../7/1">
+      <tran_glyph conn="63,17,3,3,50,2,4">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
      <state name="HomeInit">
-      <tran trig="Q_TIMEOUT" target="..">
-       <action>doStep();</action>
-       <tran_glyph conn="75,22,3,1,13">
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <action>doStepA();</action>
+       <tran_glyph conn="75,22,3,3,17">
         <action box="0,0,10,2"/>
        </tran_glyph>
       </tran>
-      <state_glyph node="75,19,13,6"/>
+      <state_glyph node="75,19,10,6"/>
      </state>
-     <state_glyph node="63,5,36,21">
-      <entry box="1,2,6,2"/>
-      <exit box="1,4,6,2"/>
-     </state_glyph>
-    </state>
-    <state name="AtHome">
-     <documentation>Flashes both lights in sync.
-Sits and waits for a button press to start the cut sequence.
-Button A selects the pattern with pins at the ends. Button B selects the inverse.</documentation>
-     <entry>RedFlashGreenFlashSync();
-</entry>
-     <exit>LightsOff();</exit>
-     <tran trig="SINGLEPRESS_A" target="../../4">
-      <action>TotalCuts=TotalCuts1;
-cutsteparray=cutsteparray1;
-</action>
-      <tran_glyph conn="102,19,3,1,2,20,-6">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
-     <tran trig="SINGLEPRESS_B" target="../../4">
-      <action>TotalCuts=TotalCuts2;
-cutsteparray=cutsteparray2;
-</action>
-      <tran_glyph conn="124,18,1,1,4,21,-15,3,-15">
-       <action box="0,-2,10,2"/>
-      </tran_glyph>
-     </tran>
-     <state_glyph node="102,9,22,16">
+     <state name="HomeInitB">
+      <tran trig="Q_TIMEOUT" target="../../1">
+       <action>doStepB();</action>
+       <tran_glyph conn="92,23,3,1,-5,1,-2">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="92,19,10,6"/>
+     </state>
+     <state_glyph node="63,5,47,21">
       <entry box="1,2,6,2"/>
       <exit box="1,4,6,2"/>
      </state_glyph>
@@ -467,18 +452,18 @@ cutsteparray=cutsteparray2;
      <entry>me-&gt;CurrentCut = 0;
 activateStepper();
 // Needs to be slower than usual if we're doing serial IO for debugging
-setStepperSeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/200U);
+setStepperSpeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/MotorStepDivider);
 </entry>
      <exit>deactivateStepper();
 stopStepperSpeedTimer(&amp;me-&gt;super);
 </exit>
-     <tran trig="OPTICALSTOP_A" target="../../5">
-      <tran_glyph conn="98,69,1,3,16">
+     <tran trig="OPTICALSTOP_A" target="../../4">
+      <tran_glyph conn="99,68,1,3,13,1,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
-     <tran trig="OPTICALSTOP_B" target="../../5">
-      <tran_glyph conn="98,71,1,3,16">
+     <tran trig="OPTICALSTOP_B" target="../../4">
+      <tran_glyph conn="99,70,1,3,13,1,2">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -488,19 +473,19 @@ stopStepperSpeedTimer(&amp;me-&gt;super);
        <guard brief="check direction">(me-&gt;CurrentStep) &gt; (cutsteparray[me-&gt;CurrentCut])</guard>
        <action>setDirectionHome();
 RedFlashGreenOff();</action>
-       <choice_glyph conn="32,43,5,3,22">
+       <choice_glyph conn="33,42,5,3,12">
         <action box="1,0,10,2"/>
        </choice_glyph>
       </choice>
-      <choice target="../../3/1">
+      <choice target="../../3/0">
        <guard>else</guard>
        <action>setDirectionAway();
 RedOffGreenFlash();</action>
-       <choice_glyph conn="32,43,4,3,20,22">
-        <action box="1,20,10,2"/>
+       <choice_glyph conn="33,42,4,3,4,12">
+        <action box="1,4,10,2"/>
        </choice_glyph>
       </choice>
-      <tran_glyph conn="19,43,3,-1,13">
+      <tran_glyph conn="20,42,3,-1,13">
        <action box="0,-2,10,2"/>
       </tran_glyph>
      </tran>
@@ -509,12 +494,13 @@ RedOffGreenFlash();</action>
 LightsOff();
 </exit>
       <state name="SeekHome">
-       <documentation>Move toward home</documentation>
-       <entry>setDirectionHome();
-BSP_Debug(&quot;Seek home&quot;);</entry>
-       <tran trig="Q_TIMEOUT">
-        <action>doStep();
---(me-&gt;CurrentStep);
+       <documentation>Move in direction set by incoming link</documentation>
+       <entry>BSP_Debug(&quot;Seeking&quot;);</entry>
+       <tran trig="Q_TIMEOUT" target="../../1">
+        <action>doStepA();
+//--(me-&gt;CurrentStep);
+me-&gt;CurrentStep += counterAdjust;
+
 #ifdef SERIALDEBUG
 Serial.print(me-&gt;CurrentStep);
 Serial.print(&quot; &quot;);
@@ -524,95 +510,52 @@ Serial.print(&quot; &quot;);
 Serial.print(cutsteparray[me-&gt;CurrentCut]);
 Serial.println(&quot;&quot;);
 #endif</action>
-        <choice>
-         <guard brief="found the cut position">me-&gt;CurrentStep == cutsteparray[me-&gt;CurrentCut]</guard>
-         <action>#ifdef SERIALDEBUG
-Serial.println(&quot;Reached target&quot;);
-#endif</action>
-         <choice target="../../../../../../6">
-          <guard brief="check finished cuts">me-&gt;CurrentCut == (TotalCuts-1)</guard>
-          <choice_glyph conn="84,46,5,3,30">
-           <action box="1,0,10,2"/>
-          </choice_glyph>
-         </choice>
-         <choice target="../../../../..">
-          <guard>else</guard>
-          <choice_glyph conn="84,46,4,1,11,14">
-           <action box="1,8,5,2"/>
-          </choice_glyph>
-         </choice>
-         <choice_glyph conn="63,46,5,-1,21">
-          <action box="1,0,10,2"/>
-         </choice_glyph>
-        </choice>
-        <choice target="../..">
-         <guard>else</guard>
-         <choice_glyph conn="63,46,4,2,7">
-          <action box="1,3,10,2"/>
-         </choice_glyph>
-        </choice>
-        <tran_glyph conn="54,46,3,-1,9">
+        <tran_glyph conn="45,45,3,3,20">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="54,40,20,13">
+       <state_glyph node="45,39,15,9">
         <entry box="1,2,6,2"/>
        </state_glyph>
       </state>
-      <state name="SeekAway">
-       <entry>BSP_Debug(&quot;Seek away&quot;);</entry>
+      <state name="SeekHomeB">
        <tran trig="Q_TIMEOUT">
-        <action>doStep();
-++(me-&gt;CurrentStep);
-#ifdef SERIALDEBUG
-Serial.print(me-&gt;CurrentStep);
-Serial.print(&quot; &quot;);
-Serial.print(me-&gt;CurrentCut);
-Serial.print(&quot; &quot;);
-
-Serial.print(cutsteparray[me-&gt;CurrentCut]);
-Serial.println(&quot;&quot;);
-#endif</action>
+        <action>doStepB();</action>
+        <choice target="../../../0">
+         <guard>else</guard>
+         <choice_glyph conn="78,43,4,2,12,-26,-7">
+          <action box="1,0,10,2"/>
+         </choice_glyph>
+        </choice>
         <choice>
-         <guard brief="found cut position">me-&gt;CurrentStep == cutsteparray[me-&gt;CurrentCut]</guard>
-         <action>#ifdef SERIALDEBUG
-Serial.println(&quot;Reached target&quot;);
-#endif</action>
-         <choice target="../../../../../../6">
-          <guard brief="check finished cuts">me-&gt;CurrentCut == (TotalCuts-1)</guard>
-          <choice_glyph conn="84,66,5,3,28,-15,2">
+         <guard brief="foundcutpos">me-&gt;CurrentStep == cutsteparray[me-&gt;CurrentCut]</guard>
+         <choice target="../../../../../../5">
+          <guard brief="checkfinished">me-&gt;CurrentCut == (TotalCuts-1)</guard>
+          <choice_glyph conn="92,43,5,3,20,9,12">
            <action box="1,0,10,2"/>
           </choice_glyph>
          </choice>
          <choice target="../../../../..">
           <guard>else</guard>
-          <choice_glyph conn="84,66,4,1,10,14">
+          <choice_glyph conn="92,43,4,1,12,7">
            <action box="1,4,10,2"/>
           </choice_glyph>
          </choice>
-         <choice_glyph conn="62,66,5,-1,22">
-          <action box="1,0,10,2"/>
+         <choice_glyph conn="78,43,5,-1,14">
+          <action box="2,-3,10,2"/>
          </choice_glyph>
         </choice>
-        <choice target="../..">
-         <guard>else</guard>
-         <choice_glyph conn="62,66,4,2,5">
-          <action box="0,2,10,2"/>
-         </choice_glyph>
-        </choice>
-        <tran_glyph conn="54,66,3,-1,8">
+        <tran_glyph conn="65,43,3,-1,13">
          <action box="0,-2,10,2"/>
         </tran_glyph>
        </tran>
-       <state_glyph node="54,57,21,14">
-        <entry box="1,2,6,2"/>
-       </state_glyph>
+       <state_glyph node="65,39,11,9"/>
       </state>
-      <state_glyph node="49,37,30,39">
+      <state_glyph node="40,36,40,39">
        <exit box="1,2,6,2"/>
       </state_glyph>
      </state>
-     <state_glyph node="19,33,79,49">
+     <state_glyph node="20,32,79,49">
       <entry box="1,2,6,2"/>
       <exit box="1,4,6,2"/>
      </state_glyph>
@@ -629,14 +572,15 @@ BSP_Debug(&quot;Error&quot;);</entry>
     <state name="Complete">
      <entry>RedOffGreenFlash();
 BSP_Debug(&quot;Complete&quot;);</entry>
-     <state_glyph node="114,42,16,12">
+     <state_glyph node="124,48,16,12">
       <entry box="1,2,6,2"/>
      </state_glyph>
     </state>
     <state name="ClearHome">
-     <entry>setDirectionAway();
+     <entry>RedOffGreenFlash();
+setDirectionAway();
 activateStepper();
-setStepperSeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/100U);
+setStepperSpeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/MotorStepDivider);
 me-&gt;CurrentStep = 0;</entry>
      <exit>deactivateStepper();
 stopStepperSpeedTimer(&amp;me-&gt;super);
@@ -673,7 +617,122 @@ stopStepperSpeedTimer(&amp;me-&gt;super);
       <exit box="1,4,6,2"/>
      </state_glyph>
     </state>
-    <state_diagram size="151,85"/>
+    <state name="GoPastHome">
+     <documentation>Move past the home position so we can take up all the slack</documentation>
+     <entry>setDirectionHome();
+activateStepper();
+setStepperSpeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/MotorStepDivider);
+RedOnGreenOn();
+me-&gt;CurrentStep = 1000; // because it is unsigned</entry>
+     <exit>deactivateStepper();
+stopStepperSpeedTimer(&amp;me-&gt;super);
+LightsOff();</exit>
+     <state name="HomeInitD">
+      <tran trig="Q_TIMEOUT">
+       <action>doStepB();
+me-&gt;CurrentStep += counterAdjust;</action>
+       <choice target="../../../1">
+        <guard>me-&gt;CurrentStep &gt; 900</guard>
+        <choice_glyph conn="136,14,4,1,-2,-7,7,-2">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <choice target="../../../../8/1">
+        <guard>else</guard>
+        <choice_glyph conn="136,14,5,3,12,5,4">
+         <action box="1,0,10,2"/>
+        </choice_glyph>
+       </choice>
+       <tran_glyph conn="132,22,3,-1,0,-8,4">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="132,18,10,6"/>
+     </state>
+     <state name="HomeInitC">
+      <tran trig="Q_TIMEOUT" target="../../0">
+       <action>doStepA();
+</action>
+       <tran_glyph conn="117,20,3,3,15">
+        <action box="0,0,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="117,17,10,6"/>
+     </state>
+     <state_glyph node="115,9,31,15">
+      <entry box="1,2,6,2"/>
+      <exit box="1,4,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="HomeFromLeft">
+     <documentation>Move until we leave the optical sensor, travelling right</documentation>
+     <entry>setDirectionAway();
+activateStepper();
+setStepperSpeed(&amp;me-&gt;super, BSP_TICKS_PER_SEC/MotorStepDivider);
+RedOffGreenFlash();</entry>
+     <exit>deactivateStepper();
+stopStepperSpeedTimer(&amp;me-&gt;super);
+LightsOff();
+me-&gt;CurrentStep = 0;</exit>
+     <tran trig="OPTICALSTOP_A2" target="../../9">
+      <tran_glyph conn="174,14,1,3,4">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state name="HomeInitE">
+      <tran trig="Q_TIMEOUT" target="../../2">
+       <action>doStepA();
+</action>
+       <tran_glyph conn="152,19,3,3,11">
+        <action box="0,0,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="152,16,10,6"/>
+     </state>
+     <state name="HomeInitF">
+      <tran trig="Q_TIMEOUT" target="../../1">
+       <action>doStepB();
+me-&gt;CurrentStep += counterAdjust;</action>
+       <tran_glyph conn="163,20,3,2,0,4,-7,-2">
+        <action box="0,-2,10,2"/>
+       </tran_glyph>
+      </tran>
+      <state_glyph node="163,16,10,6"/>
+     </state>
+     <state_glyph node="150,10,24,13">
+      <entry box="1,2,6,2"/>
+      <exit box="1,4,6,2"/>
+     </state_glyph>
+    </state>
+    <state name="AtHome">
+     <documentation>Flashes both lights in sync.
+Sits and waits for a button press to start the cut sequence.
+Button A selects the pattern with pins at the ends. Button B selects the inverse.</documentation>
+     <entry>RedFlashGreenFlashSync();
+</entry>
+     <tran trig="SINGLEPRESS_A" target="../../3">
+      <action>TotalCuts=TotalCuts1;
+cutsteparray=cutsteparray1;
+// Green light for the primary pattern
+RedOffGreenOn();</action>
+      <tran_glyph conn="178,19,3,1,2,19,-81">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <tran trig="SINGLEPRESS_B" target="../../3">
+      <action>TotalCuts=TotalCuts2;
+cutsteparray=cutsteparray2;
+// Red light for inverse
+RedOnGreenOff();</action>
+      <tran_glyph conn="190,18,1,1,3,21,-14,2,-80">
+       <action box="0,-2,10,2"/>
+      </tran_glyph>
+     </tran>
+     <state_glyph node="178,9,12,16">
+      <entry box="1,2,6,2"/>
+     </state_glyph>
+    </state>
+    <state_diagram size="191,85"/>
    </statechart>
   </class>
  </package>
@@ -719,6 +778,7 @@ QActiveCB const Q_ROM QF_active[] = {
 enum {
     BSP_TICKS_PER_SEC = 10000, // number of system clock ticks in one second
     TicksPerISR = 100, // The switches get checked BSP_TICKS_PER_SEC/TicksPerISR
+    MotorStepDivider = 400, // used to set the timers for sending step signals
     BUTTON_PRESS_TOUT = BSP_TICKS_PER_SEC/5, // how close together do button presses need to be
     LED_RED = 13,
     LED_GREEN = 12,
@@ -733,7 +793,7 @@ enum {
 
 enum InputSignals {
 // first set to do with indicators
-CHANGE_INDICATOR_SIG=Q_USER_SIG, 
+CHANGE_INDICATOR_SIG=Q_USER_SIG,
 GO_TO_A_SIG,
 GO_TO_B_SIG,
 GO_TO_C_SIG,
@@ -744,6 +804,9 @@ GO_TO_G_SIG,
 // optical sensors
 OPTICALSTOP_A_SIG,
 OPTICALSTOP_B_SIG,
+// reverse transitions
+OPTICALSTOP_A2_SIG,
+OPTICALSTOP_B2_SIG,
 // buttons - unprocessed
 BUTTONPRESS_A_SIG,
 BUTTONPRESS_B_SIG,
@@ -754,6 +817,11 @@ DOUBLEPRESS_SIG,
 DUALPRESS_SIG
 
 };
+
+// direction indicator. Having a direction variable
+// means that we can avoid extra states in the seek blocks
+int counterAdjust = 1;
+
 void BSP_Debug(const char * msg)
 {
 #ifdef SERIALDEBUG
@@ -773,6 +841,7 @@ BSP_Debug(&quot;double press A&quot;);
 }
 void ButtonBSingle()
 {
+QACTIVE_POST_ISR((QMActive *)&amp;AO_Stage, SINGLEPRESS_B_SIG, 0U);
 BSP_Debug(&quot;single press B&quot;);
 }
 void ButtonBDouble()
@@ -828,10 +897,12 @@ QACTIVE_POST_ISR((QMActive *)&amp;AO_Indicator, GO_TO_G_SIG, 0U);
 
 void setDirectionHome(){
   digitalWrite(TBCW_P, HIGH);
+  counterAdjust = -1;
 }
 
 void setDirectionAway(){
     digitalWrite(TBCW_P, LOW);
+    counterAdjust = 1;
 }
 
 void activateStepper(){
@@ -842,7 +913,8 @@ void deactivateStepper(){
    digitalWrite(TBEN_P, HIGH);
 }
 
-void setStepperSeed(QActive * who, QTimeEvtCtr Tm) {
+
+void setStepperSpeed(QActive * who, QTimeEvtCtr Tm) {
    QActive_armX(who, 0U, Tm, Tm);
 }
 void stopStepperSpeedTimer(QActive * who) {
@@ -853,6 +925,22 @@ void doStep(){
     digitalWrite(TBCLK_P, HIGH);
     digitalWrite(TBCLK_P, LOW);
 }
+
+void doStepA(){
+    //digitalWrite(TBCLK_P, HIGH);
+// https://forum.arduino.cc/index.php?topic=91079.0
+    PORTB |= _BV (2); //
+    //digitalWrite(TBCLK_P, LOW);
+    //PORTB &amp;= ~_BV (2);
+}
+void doStepB(){
+    //digitalWrite(TBCLK_P, LOW);
+// https://forum.arduino.cc/index.php?topic=91079.0
+   //PORTB |= _BV (2); //
+    //digitalWrite(TBCLK_P, LOW);
+    PORTB &amp;= ~_BV (2);
+}
+
 // Document the indicator states
 // Started and waiting - red and green on - this is where it stops before attempting to find the home position. 
 // Press a button to seek home
@@ -942,9 +1030,13 @@ ISR(TIMER2_COMPA_vect) {
         // compare  nOutput and pOutput to get a transition
         // low to high transitions only
         uint8_t LowtoHigh = nOutput &amp; (~pOutput);
+        uint8_t HightoLow = pOutput &amp; (~nOutput);
         /* the following relies on the input ports being PIN numbers 0-7 */
         uint8_t opticalA = LowtoHigh &amp; (1 &lt;&lt; OPTICAL_A);
+        uint8_t opticalA2 = HightoLow &amp; (1 &lt;&lt; OPTICAL_A);
         uint8_t opticalB = LowtoHigh &amp; (1 &lt;&lt; OPTICAL_B);
+        uint8_t opticalB2 = HightoLow &amp; (1 &lt;&lt; OPTICAL_B);
+
         uint8_t buttonA = LowtoHigh &amp; (1 &lt;&lt; BUTTON_A);
         uint8_t buttonB = LowtoHigh &amp; (1 &lt;&lt; BUTTON_B);
         pOutput=nOutput;
@@ -956,6 +1048,15 @@ ISR(TIMER2_COMPA_vect) {
         if (opticalB) {
            BSP_Debug(&quot;Optical B&quot;);
            QACTIVE_POST_ISR((QMActive *)&amp;AO_Stage, OPTICALSTOP_B_SIG, 0U);
+        }
+
+        if (opticalA2) {
+           BSP_Debug(&quot;Optical A2&quot;);
+           QACTIVE_POST_ISR((QMActive *)&amp;AO_Stage, OPTICALSTOP_A2_SIG, 0U);
+        }
+        if (opticalB2) {
+           BSP_Debug(&quot;Optical B2&quot;);
+           QACTIVE_POST_ISR((QMActive *)&amp;AO_Stage, OPTICALSTOP_B2_SIG, 0U);
         }
 
         if (buttonA) {

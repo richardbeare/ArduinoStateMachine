@@ -43,9 +43,9 @@
 
 import numpy as np
 
-## Thread is one turn for 5mm, 200 steps per turn. TODO - check accuracy of 
+## Thread is one turn for 5mm, 400 steps per turn. TODO - check accuracy of 
 ## this scale. Multiply position in mm by this to get position in steps
-stepscale=200/5
+stepscale=400/5
 
 def mkPatInv(pat):
     return({'leftpat': pat['rightpat'], 'rightpat': pat['leftpat']})
@@ -170,8 +170,24 @@ def dumpPattern(pat, filename, kerfwidth, extracuts=False):
 ## code to generate the patterns here
 ## test version : 5 pins, 100mm board
 
-p1=mkSlotsB(5, 100)
+#p1=mkSlotsB(4, 82.55)
+
+# vertical edges of test box. Ply is 9mm
+#p1 = mkSlotsB(7, 129)
+
+# base of box - short edge
+#p1 = mkSlotsB(4, 107.5)
+#p1 = mkSlotsB(7, 237.5)
+#p1 = mkSlotsB(4, 62)
+
+#p1 = mkSlotsB(5, 100)
+p1 = mkSlotsB(15, 300)
 
 # Estimate kerf for the "allpurpose blade"
-dumpPattern(p1, "targetsteps.h", 2.75, extracuts=True)
+#dumpPattern(p1, "targetsteps.h", 2.675, extracuts=True)
 
+# Kerf for wood blades is 2.5mm. Measure a piece, cut in two, measure
+# the two pieces and take the difference
+# result was 2.5mm
+# Also says this on the blade.
+dumpPattern(p1, "targetsteps.h", 2.5, extracuts=True)
